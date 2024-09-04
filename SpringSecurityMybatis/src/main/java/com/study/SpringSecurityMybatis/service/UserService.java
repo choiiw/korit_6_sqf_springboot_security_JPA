@@ -1,17 +1,17 @@
 package com.study.SpringSecurityMybatis.service;
 
-import com.study.SpringSecurityMybatis.dto.request.ReqProfileImgDto;
-import com.study.SpringSecurityMybatis.dto.request.ReqSigninDto;
-import com.study.SpringSecurityMybatis.dto.request.ReqSignupDto;
+import com.study.SpringSecurityMybatis.dto.request.*;
 import com.study.SpringSecurityMybatis.dto.response.RespDeleteUserDto;
 import com.study.SpringSecurityMybatis.dto.response.RespSigninDto;
 import com.study.SpringSecurityMybatis.dto.response.RespSignupDto;
 import com.study.SpringSecurityMybatis.dto.response.RespUserInfoDto;
+import com.study.SpringSecurityMybatis.entity.OAuth2User;
 import com.study.SpringSecurityMybatis.entity.Role;
 import com.study.SpringSecurityMybatis.entity.User;
 import com.study.SpringSecurityMybatis.entity.UserRoles;
 import com.study.SpringSecurityMybatis.exception.DeleteUserException;
 import com.study.SpringSecurityMybatis.exception.SignupException;
+import com.study.SpringSecurityMybatis.repository.OAuth2UserMapper;
 import com.study.SpringSecurityMybatis.repository.RoleMapper;
 import com.study.SpringSecurityMybatis.repository.UserMapper;
 import com.study.SpringSecurityMybatis.repository.UserRolesMapper;
@@ -29,7 +29,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +44,8 @@ public class UserService {
     private UserMapper userMapper;
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private OAuth2UserMapper oAuth2UserMapper;
     @Autowired
     private UserRolesMapper userRolesMapper;
     @Autowired
@@ -87,6 +88,7 @@ public class UserService {
                 .user(user)
                 .build();
     }
+
 
     public RespSigninDto getGeneratedAccessToken(ReqSigninDto dto) {
         User user = checkUsernameAndPassword(dto.getUsername(), dto.getPassword());
@@ -158,6 +160,15 @@ public class UserService {
 
         userMapper.modifyImgById(principalUser.getId(), dto.getImg());
         return true;
+    }
+
+    public OAuth2User mergeSignin(ReqOAuth2MergeDto dto) {
+        User user = checkUsernameAndPassword(dto.getUsername(), dto.getPassword());
+        return OAuth2User.builder()
+                .userId(user.getId())
+                .oAuth2Name(dto.getOauth2Name())
+                .provider(dto.getProvider())
+                .build();
     }
 }
 

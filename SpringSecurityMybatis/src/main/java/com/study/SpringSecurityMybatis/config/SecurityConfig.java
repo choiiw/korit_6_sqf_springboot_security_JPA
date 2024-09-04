@@ -2,7 +2,8 @@ package com.study.SpringSecurityMybatis.config;
 
 import com.study.SpringSecurityMybatis.security.filter.JwtAccessTokenFilter;
 import com.study.SpringSecurityMybatis.security.handler.AuthenticationHandler;
-import com.study.SpringSecurityMybatis.security.jwt.JwtProvider;
+import com.study.SpringSecurityMybatis.security.handler.OAuth2SuccessHandler;
+import com.study.SpringSecurityMybatis.service.OAuth2Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,11 +22,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtAccessTokenFilter jwtAccessTokenFilter;
     @Autowired
     private AuthenticationHandler authenticationHandler;
-
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Autowired
+    private OAuth2SuccessHandler oAuth2SuccessHandler;
+    @Autowired
+    private OAuth2Service oAuth2Service;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -36,16 +36,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.cors();
 
-        http.exceptionHandling()
-                .authenticationEntryPoint(authenticationHandler);
+        http.oauth2Login() // OAuth2 로그인 기능에 대한 여러 설정의 진입점
+                .successHandler(oAuth2SuccessHandler) // OAuth2 로그인 성공 핸들러
+                .userInfoEndpoint() //  OAuth2 로그인 성공 이후 사용자 정보를 가져올 때의 설정들을 담당
+                .userService(oAuth2Service); // 소셜 로그인 성공 시 후속 조치를 진행할 UserService 인터페이스의 구현체를 등록
 
-        http.authorizeRequests()
-                .antMatchers("/auth/**", "/h2-console/**")
-                .permitAll()
-                .anyRequest()
-                .authenticated();
+        http.exceptionHandling() // 예외 처리를 진행
+                .authenticationEntryPoint(authenticationHandler); // 인증이 필요한 페이지에 접근했을 때, 인증이 되지 않은 상태라면 AuthenticationEntryPoint를 호출
 
-        http.addFilterBefore(jwtAccessTokenFilter, UsernamePasswordAuthenticationFilter.class);
+        http.authorizeRequests() // HttpServletRequest에 따라 접근(access)을 제한
+                .antMatchers("/auth/**", "/h2-console/**") // 권한 관리 대상을 지정하는 옵션
+                .permitAll() // 권한 관리 대상을 지정하는 옵션
+                .anyRequest() // 설정된 값들 이외 나머지 URL
+                .authenticated(); // 설정된 값들 이외 나머지 URL
+
+        http.addFilterBefore(jwtAccessTokenFilter, UsernamePasswordAuthenticationFilter.class); // JwtAccessTokenFilter를 UsernamePasswordAuthenticationFilter 전에 넣기
     }
 
 }

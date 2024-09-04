@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.study.SpringSecurityMybatis.repository.OAuth2UserMapper">
+
+    <insert id="save">
+        insert into
+            oauth2_user
+        values
+            (default, #{userId}, #{oAuth2Name}, #{provider})
+    </insert>
+    <select id="findByOAuth2Name" resultType="com.study.SpringSecurityMybatis.entity.OAuth2User">
+        select
+            id,
+            user_id,
+            oauth2_name,
+            provider
+        from
+            oauth2_user
+        where
+            oauth2_name = #{oAuth2Name}
+    </select>
+</mapper>

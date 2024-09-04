@@ -8,7 +8,9 @@ import org.apache.ibatis.annotations.Param;
 public interface UserMapper {
     User findById(Long id);
     User findByUsername(String username);
+    User findByOAuth2Name(String oAuth2Name);
     int save(User user);
     int deleteById(Long id);
     int modifyImgById(@Param("id") Long id, @Param("img") String img);
+
 }

@@ -1,0 +1,12 @@
+package com.study.SpringSecurityMybatis.repository;
+
+import com.study.SpringSecurityMybatis.entity.OAuth2User;
+import org.apache.ibatis.annotations.Mapper;
+
+@Mapper
+public interface OAuth2UserMapper {
+
+    int save(OAuth2User oAuth2User);
+    OAuth2User findByOAuth2Name(String oAuth2Name);
+
+}
